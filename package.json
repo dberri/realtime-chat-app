@@ -1,0 +1,23 @@
+{
+  "name": "realtime-chat",
+  "version": "1.0.0",
+  "description": "A real time chat app created with Node.js and Socket.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "chat",
+    "real-time",
+    "node.js",
+    "socket.io"
+  ],
+  "author": {
+    "name": "David Berri",
+    "url": "https://dberri.com"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^2.3.0"
+  }
+}

@@ -1,0 +1,109 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RealTime</title>
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="bg-white overflow-hidden overflow-hidden shadow rounded-lg px-4 py-4 sm:px-6 w-4/5 mx-auto mt-8">
+    <h2 class="text-2xl leading-8 font-extrabold text-gray-900 sm:text-3xl sm:leading-9">
+      Chat
+    </h2>
+
+    <div class="px-4 py-5 sm:p-6" id="message-box">
+      <!-- Content goes here -->
+    </div>
+
+    <div class="border-t border-gray-200 px-4 py-4 sm:px-6">
+      <form id="form" action="#" method="POST" class="grid grid-cols-1 row-gap-6">
+        <div>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <input id="input" placeholder="Start typing..."
+              class="form-input py-3 px-4 block w-full transition ease-in-out duration-150">
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-base leading-6 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition ease-in-out duration-150">
+          Send message
+        </button>
+      </form>
+    </div>
+
+    <div class="border-t border-gray-200 px-4 py-4 sm:px-6">
+      <h3 class="px-4 py-4">Who's online:</h3>
+      <ul id="peer-list"
+        class="px-6 py-3 max-w-0 w-full whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
+        <!-- Content goes here -->
+      </ul>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let myName = ''
+    const socket = io();
+
+    // Handles the "name-generated" event by storing the client's name in a variable
+    socket.on('name-generated', name => {
+      myName = name
+    })
+
+    // Handles the "update-peers" event by updating the peers list
+    socket.on('update-peers', peers => {
+      peerList.innerHTML = ''
+
+      const template = `<li class="flex items-center space-x-3 lg:pl-2">
+          <div class="flex-shrink-0 w-2 h-2 rounded-full bg-%PEER_COLOR%-600"></div>
+          <span>%PEER_NAME%</span>
+        </li>`
+
+      for (const peer of peers) {
+        let name = peer
+        if (name === myName) {
+          name += ' (you)'
+        }
+        peerList.innerHTML += template.replace('%PEER_NAME%', name).replace('%PEER_COLOR%', peer.split('-')[0])
+      }
+    })
+
+    // Handles "newMessage" event and add that message to the chat
+    socket.on('newMessage', ({ sender, message }) => {
+      let name = document.createElement('strong');
+      name.textContent = `${sender} says: `
+
+      let msgEl = document.createElement('span');
+      msgEl.textContent = message
+
+      let paragraph = document.createElement('p');
+      paragraph.appendChild(name);
+      paragraph.appendChild(msgEl);
+
+      msgBox.appendChild(paragraph);
+    });
+
+    /**
+     * Retrieves message from input and emits to the server
+     * 
+     * @param {Object} evt Event fired by the form submission
+     */
+    function submitHandler(evt) {
+      evt.preventDefault();
+      socket.emit('message', input.value);
+      input.value = ''
+      msgBox.focus();
+    }
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const msgBox = document.getElementById('message-box');
+    const peerList = document.getElementById('peer-list');
+
+    form.addEventListener('submit', submitHandler)
+  </script>
+</body>
+
+</html>
